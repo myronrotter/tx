@@ -19,27 +19,25 @@ func MustGetDB(ctx context.Context) *gorm.DB {
 }
 
 type Manager struct {
-	*gorm.DB
+	db *gorm.DB
 }
 
 var _ tx.Manager = &Manager{}
 
 func New(db *gorm.DB) *Manager {
 	return &Manager{
-		DB: db,
+		db: db,
 	}
 }
 
 func (m *Manager) DoInTransaction(ctx context.Context, uow func(ctx context.Context) error) error {
-	c := ctx
-
 	db, ok := ctx.Value(contextKey).(*gorm.DB)
 	if !ok {
-		db = m.Begin()
-		c = context.WithValue(ctx, contextKey, db)
+		db = m.db.Begin()
+		ctx = context.WithValue(ctx, contextKey, db)
 	}
 
-	err := uow(c)
+	err := uow(ctx)
 	if err != nil {
 		db.Rollback()
 		return err
