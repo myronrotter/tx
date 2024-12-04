@@ -38,6 +38,9 @@ func newEnv(ctx context.Context) (*env, error) {
 	dsn := fmt.Sprintf("user:password@tcp(localhost:%s)/db?charset=utf8mb4&parseTime=True&loc=Local", p.Port())
 	fmt.Printf("DSN: %s", dsn)
 	db, err := gorm.Open(gmysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
 
 	return &env{
 		mysql: mysqlContainer,
