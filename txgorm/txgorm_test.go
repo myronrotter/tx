@@ -93,7 +93,7 @@ func TestManager(t *testing.T) {
 				return err
 			}
 
-			err = manager.DoInTransaction(context.Background(), func(ctx context.Context) error {
+			err = manager.DoInTransaction(ctx, func(ctx context.Context) error {
 				err = txgorm.MustGetDB(ctx).Create(users2).Error
 				if err != nil {
 					return err
@@ -128,7 +128,7 @@ func TestManager(t *testing.T) {
 				return err
 			}
 
-			err = manager.DoInTransaction(context.Background(), func(ctx context.Context) error {
+			err = manager.DoInTransaction(ctx, func(ctx context.Context) error {
 				return errors.New("test")
 			})
 			if err != nil {

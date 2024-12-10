@@ -31,10 +31,12 @@ func New(db *gorm.DB) *Manager {
 }
 
 func (m *Manager) DoInTransaction(ctx context.Context, uow func(ctx context.Context) error) error {
+	commiter := false
 	db, ok := ctx.Value(contextKey).(*gorm.DB)
 	if !ok {
 		db = m.db.Begin()
 		ctx = context.WithValue(ctx, contextKey, db)
+		commiter = true
 	}
 
 	err := uow(ctx)
@@ -43,6 +45,8 @@ func (m *Manager) DoInTransaction(ctx context.Context, uow func(ctx context.Cont
 		return err
 	}
 
-	db.Commit()
+	if commiter {
+		db.Commit()
+	}
 	return nil
 }
