@@ -30,14 +30,12 @@ func newEnv(ctx context.Context) (*env, error) {
 		return nil, err
 	}
 
-	p, err := mysqlContainer.MappedPort(ctx, "3306")
+	connStr, err := mysqlContainer.ConnectionString(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	dsn := fmt.Sprintf("user:password@tcp(localhost:%s)/db?charset=utf8mb4&parseTime=True&loc=Local", p.Port())
-	fmt.Printf("DSN: %s", dsn)
-	db, err := gorm.Open(gmysql.Open(dsn), &gorm.Config{})
+	fmt.Printf("connection: %s\n", connStr)
+	db, err := gorm.Open(gmysql.Open(connStr), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
