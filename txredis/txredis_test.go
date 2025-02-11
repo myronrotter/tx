@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 	"tx/txredis"
@@ -29,14 +28,16 @@ func newEnv(ctx context.Context) (*env, error) {
 	}
 
 	connStr, err := redisContainer.ConnectionString(ctx)
-	connStr = strings.ReplaceAll(connStr, "redis://", "")
+	if err != nil {
+		return nil, err
+	}
 	fmt.Printf("connection: %s\n", connStr)
-	client := gredis.NewClient(
-		&gredis.Options{
-			Addr:     connStr,
-			Password: "", // no password set
-		},
-	)
+	opts, err := gredis.ParseURL(connStr)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("opts: %+v\n", opts)
+	client := gredis.NewClient(opts)
 
 	sctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -95,7 +96,7 @@ func TestManager(t *testing.T) {
 
 	t.Run("rollback successfully", func(t *testing.T) {
 		err := manager.DoInTransaction(context.Background(), func(ctx context.Context) error {
-			err := txredis.MustGetPipe(ctx).Set(ctx, "key1", "value1", 0).Err()
+			err := txredis.MustGetPipe(ctx).Set(ctx, "key3", "value3", 0).Err()
 			if err != nil {
 				return err
 			}
@@ -111,9 +112,9 @@ func TestManager(t *testing.T) {
 		})
 		require.Error(t, err)
 
-		val1, err := e.client.Get(ctx, "key1").Result()
+		val3, err := e.client.Get(ctx, "key3").Result()
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, gredis.Nil)
-		assert.Equal(t, "", val1)
+		assert.Equal(t, "", val3)
 	})
 }
