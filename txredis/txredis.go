@@ -2,6 +2,7 @@ package txredis
 
 import (
 	"context"
+	"errors"
 	"tx"
 
 	"github.com/go-redis/redis/v8"
@@ -41,12 +42,19 @@ func (m *Manager) DoInTransaction(ctx context.Context, uow func(ctx context.Cont
 
 	err := uow(ctx)
 	if err != nil {
-		pipe.Discard()
+		discardErr := pipe.Discard()
+		if discardErr != nil {
+			return errors.Join(err, discardErr)
+		}
+
 		return err
 	}
 
 	if commiter {
-		pipe.Exec(ctx)
+		_, execErr := pipe.Exec(ctx)
+		if execErr != nil {
+			return execErr
+		}
 	}
 	return nil
 }

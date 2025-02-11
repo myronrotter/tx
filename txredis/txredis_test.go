@@ -2,7 +2,6 @@ package txredis_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -94,6 +93,17 @@ func TestManager(t *testing.T) {
 		assert.Equal(t, "value2", val2)
 	})
 
+	t.Run("error on exec", func(t *testing.T) {
+		err := manager.DoInTransaction(context.Background(), func(ctx context.Context) error {
+			pipe := txredis.MustGetPipe(ctx) // simulate closed connection
+			pipe.Close()
+
+			return nil
+		})
+		require.Error(t, err)
+		assert.Equal(t, err.Error(), "redis: client is closed")
+	})
+
 	t.Run("rollback successfully", func(t *testing.T) {
 		err := manager.DoInTransaction(context.Background(), func(ctx context.Context) error {
 			err := txredis.MustGetPipe(ctx).Set(ctx, "key3", "value3", 0).Err()
@@ -102,7 +112,7 @@ func TestManager(t *testing.T) {
 			}
 
 			err = manager.DoInTransaction(ctx, func(ctx context.Context) error {
-				return errors.New("test")
+				return assert.AnError
 			})
 			if err != nil {
 				return err
@@ -116,5 +126,17 @@ func TestManager(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, gredis.Nil)
 		assert.Equal(t, "", val3)
+	})
+
+	t.Run("error on discard", func(t *testing.T) {
+		err := manager.DoInTransaction(context.Background(), func(ctx context.Context) error {
+			pipe := txredis.MustGetPipe(ctx) // simulate closed connection
+			pipe.Close()
+
+			return assert.AnError
+		})
+		require.Error(t, err)
+		assert.ErrorIs(t, err, assert.AnError)
+		assert.Contains(t, err.Error(), "redis: client is closed")
 	})
 }

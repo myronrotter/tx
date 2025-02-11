@@ -113,6 +113,17 @@ func TestManager(t *testing.T) {
 		assert.Len(t, actuals, 4)
 	})
 
+	t.Run("error on commit", func(t *testing.T) {
+		err := manager.DoInTransaction(context.Background(), func(ctx context.Context) error {
+			db := txgorm.MustGetDB(ctx)
+			db.Error = assert.AnError // simulate error on commit
+
+			return nil
+		})
+		require.Error(t, err)
+		assert.ErrorIs(t, err, assert.AnError)
+	})
+
 	t.Run("rollback successfully", func(t *testing.T) {
 		users := []User{
 			{
@@ -127,7 +138,7 @@ func TestManager(t *testing.T) {
 			}
 
 			err = manager.DoInTransaction(ctx, func(ctx context.Context) error {
-				return errors.New("test")
+				return assert.AnError
 			})
 			if err != nil {
 				return err
@@ -141,5 +152,18 @@ func TestManager(t *testing.T) {
 		err = e.db.Model(&User{}).Where("name = ?", users[0].Name).Find(&actuals).Error
 		assert.NoError(t, err)
 		assert.Len(t, actuals, 0)
+	})
+
+	t.Run("error on rollback", func(t *testing.T) {
+		rerr := errors.New("error causing rollback")
+		err := manager.DoInTransaction(context.Background(), func(ctx context.Context) error {
+			db := txgorm.MustGetDB(ctx)
+			db.Error = assert.AnError // simulate error on rollback
+
+			return rerr
+		})
+		require.Error(t, err)
+		assert.ErrorIs(t, err, assert.AnError)
+		assert.ErrorIs(t, err, rerr)
 	})
 }

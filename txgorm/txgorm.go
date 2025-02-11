@@ -2,6 +2,7 @@ package txgorm
 
 import (
 	"context"
+	"errors"
 	"tx"
 
 	"gorm.io/gorm"
@@ -41,12 +42,19 @@ func (m *Manager) DoInTransaction(ctx context.Context, uow func(ctx context.Cont
 
 	err := uow(ctx)
 	if err != nil {
-		db.Rollback()
+		rollbackErr := db.Rollback().Error
+		if rollbackErr != nil {
+			return errors.Join(err, rollbackErr)
+		}
+
 		return err
 	}
 
 	if commiter {
-		db.Commit()
+		commitErr := db.Commit().Error
+		if commitErr != nil {
+			return commitErr
+		}
 	}
 	return nil
 }
