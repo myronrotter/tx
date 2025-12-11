@@ -13,7 +13,7 @@ package main
 
 import (
     "context"
-    "tx/txgorm"
+    "github.com/myronrotter/tx/txgorm"
     "gorm.io/gorm"
 )
 
@@ -63,7 +63,7 @@ package main
 
 import (
     "context"
-    "tx/txredis"
+    "github.com/myronrotter/tx/txredis"
     "github.com/go-redis/redis/v8"
 )
 
