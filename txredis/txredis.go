@@ -3,9 +3,9 @@ package txredis
 import (
 	"context"
 	"errors"
-	"tx"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/myronrotter/tx"
 )
 
 const contextKey tx.ContextKey = "redis"

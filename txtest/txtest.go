@@ -2,7 +2,8 @@ package txtest
 
 import (
 	"context"
-	"tx"
+
+	"github.com/myronrotter/tx"
 )
 
 type Manager struct{}

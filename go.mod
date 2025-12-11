@@ -1,4 +1,4 @@
-module tx
+module github.com/myronrotter/tx
 
 go 1.23.3
 

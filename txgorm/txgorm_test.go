@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"testing"
-	"tx/txgorm"
 
+	"github.com/myronrotter/tx/txgorm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/mysql"

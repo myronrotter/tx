@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 	"time"
-	"tx/txredis"
 
 	gredis "github.com/go-redis/redis/v8"
+	"github.com/myronrotter/tx/txredis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/redis"

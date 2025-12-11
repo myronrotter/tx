@@ -3,8 +3,8 @@ package txgorm
 import (
 	"context"
 	"errors"
-	"tx"
 
+	"github.com/myronrotter/tx"
 	"gorm.io/gorm"
 )
 
